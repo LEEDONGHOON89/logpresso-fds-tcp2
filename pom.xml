@@ -56,7 +56,7 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Bundle-SymbolicName>com.logpresso.fds.tcp</Bundle-SymbolicName>
+						<Bundle-SymbolicName>com.logpresso.fds.tcp.noclient</Bundle-SymbolicName>
 						<Export-Package>
 							com.logpresso.fds.tcp;version=${project.version}
 						</Export-Package>
@@ -155,7 +155,7 @@
 		<dependency>
 			<groupId>com.logpresso</groupId>
 			<artifactId>logpresso-fds</artifactId>
-			<version>0.7.7</version>
+			<version>0.7.9</version>
 			<exclusions>
 				<exclusion>
 					<groupId>log4j</groupId>
