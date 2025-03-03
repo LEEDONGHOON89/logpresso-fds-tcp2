@@ -1,4 +1,4 @@
-package com.logpresso.fds.tcp;
+package com.logpresso.fds.tcp2;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

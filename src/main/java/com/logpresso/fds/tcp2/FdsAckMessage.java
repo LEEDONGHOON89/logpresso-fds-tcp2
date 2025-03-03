@@ -1,4 +1,4 @@
-package com.logpresso.fds.tcp;
+package com.logpresso.fds.tcp2;
 
 public class FdsAckMessage {
 	private String guid;

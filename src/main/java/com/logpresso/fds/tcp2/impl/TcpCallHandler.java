@@ -1,4 +1,4 @@
-package com.logpresso.fds.tcp.impl;
+package com.logpresso.fds.tcp2.impl;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,17 +46,13 @@ import com.logpresso.fds.api.FdsConfigService;
 import com.logpresso.fds.api.FdsDetectService;
 import com.logpresso.fds.api.MatchListener;
 import com.logpresso.fds.api.model.FdsConfig;
-import com.logpresso.fds.client.FdsCall;
 import com.logpresso.fds.client.FdsClientPool;
 import com.logpresso.fds.client.FdsLogLevel;
 import com.logpresso.fds.client.FdsLogListener;
-import com.logpresso.fds.client.FdsPost;
-import com.logpresso.fds.client.NoAvailableServerException;
-import com.logpresso.fds.tcp.FdsAckMessage;
-import com.logpresso.fds.tcp.FdsCallMessage;
-import com.logpresso.fds.tcp.FdsPostMessage;
-import com.logpresso.fds.tcp.TcpCallStats;
-import com.logpresso.fds.tcp.TcpPeer;
+import com.logpresso.fds.tcp2.FdsCallMessage;
+import com.logpresso.fds.tcp2.FdsPostMessage;
+import com.logpresso.fds.tcp2.TcpCallStats;
+import com.logpresso.fds.tcp2.TcpPeer;
 import com.logpresso.query.api.StreamQueryService;
 
 @Sharable
@@ -372,76 +368,24 @@ public class TcpCallHandler extends SimpleChannelInboundHandler<Object> implemen
 	private void handlePost(ChannelHandlerContext ctx, FdsPostMessage post) {
 		if (System.currentTimeMillis() - postTransformerRefreshTime > 1000)
 			refreshPostTransformer();
-
-		if (!post.isTransformed()) {
-			if (postTransformerName != null && postTransformer == null) {
-				if (slog.isDebugEnabled())
-					slog.debug("logpresso fds tcp: cannot find post transform ");
-
-				if (post.getChannel() != null && post.getGuid() != null) {
-					FdsAckMessage ack = new FdsAckMessage(post.getGuid());
-					ack.setTimeout(true);
-					post.getChannel().writeAndFlush(ack);
-				}
-				return;
-			} else if (postTransformer != null) {
-				try {
-					post.setParams(postTransformer.transform(new SimpleLog(new Date(), "", post.getParams())).getParams());
-					if (post.getParams().get("login") != null)
-						post.setLogin((String) post.getParams().get("login"));
-					post.setTransformed(true);
-				} catch (Throwable t) {
-					if (slog.isDebugEnabled())
-						slog.debug("logpresso fds tcp: cannot transform post params", t);
-
-					if (post.getChannel() != null && post.getGuid() != null) {
-						FdsAckMessage ack = new FdsAckMessage(post.getGuid());
-						ack.setTimeout(true);
-						post.getChannel().write(ack);
-					}
-					return;
-				}
-			}
-		}
-
-		if (inlog.isDebugEnabled())
-			inlog.debug("tcp call: received post, [{}]", post.getParams());
 		
-		post.setLogin((String) post.getParams().get("login"));
-		String login = (String) post.getLogin();
-		if (peer != null && login != null) {
-			int offset = Math.abs(login.hashCode()) % 2;
-			if (offset == peer.getSlot()) {
-				while (true) {
-					try {
-						peerExecutor.submit(new PeerPostRunner(post));
-						redirectPostCounter.incrementAndGet();
-						break;
-					} catch (RejectedExecutionException e) {
-					} catch (Throwable t) {
-						break;
-					}
-				}
-				return;
-			}
-		}
-
+		/* peer 세팅 제거 2025.02.26
+		** 사유 : no clinet 버전의 경우 login을 가져올수 없어서 peer처리 불가로 인해 제거
+		**/
+		if (inlog.isDebugEnabled())
+			inlog.debug("tcp call: received post, [{}]", post);
+		
 		handleLocalPost(post);
 	}
 
 	private void handleLocalPost(FdsPostMessage post) {
-		if (post.getChannel() != null && post.getGuid() != null){
-			post.getChannel().writeAndFlush(new FdsAckMessage(post.getGuid()));
-		}
+		postCounter.incrementAndGet();
+		lastPostTime = System.currentTimeMillis();
 		
-		if (post.getTopic() == null || !post.getTopic().equals("ping")) {
-			postCounter.incrementAndGet();
-			lastPostTime = System.currentTimeMillis();
-
-			Row row = new Row(post.getParams());
-			row.put("_time", post.getCreated());
-			streamQueryService.pushStream("FDS수집로그입력", row);
-		}
+		slog.debug("handleLocalPost post = {}",post);
+		Row row = new Row(post.getParams());
+		row.put("_time", post.getCreated());
+		streamQueryService.pushStream("FDS수집로그입력", row);
 	}
 
 	private void handleMatchCall(ChannelHandlerContext ctx, FdsCallMessage call) {
@@ -449,61 +393,6 @@ public class TcpCallHandler extends SimpleChannelInboundHandler<Object> implemen
 			refreshCallTransformer();
 		if (inlog.isDebugEnabled())
 			inlog.debug("tcp call: received match call, [{}]", call.getRequest());
-
-		if (echo) {
-			call.setResponse(call.getRequest());
-			ctx.channel().writeAndFlush(call);
-			return;
-		}
-
-		if (call.getRequest().get("guid") == null) {
-			slog.warn("tcp call: guid not found for match call [{}]", call.getRequest());
-			return;
-		}
-
-		if (!call.isTransformed()) {
-			if (callTransformerName != null && callTransformer == null) {
-				if (slog.isDebugEnabled())
-					slog.debug("logpresso fds tcp: cannot find call transform");
-
-				call.setError();
-				call.setResponse(call.getRequest());
-				ctx.channel().writeAndFlush(call);
-				return;
-			} else if (callTransformer != null) {
-				try {
-					call.setRequest(callTransformer.transform(new SimpleLog(new Date(), "", call.getRequest())).getParams());
-					call.setTransformed(true);
-				}catch (Throwable t) {
-					if (slog.isDebugEnabled())
-						slog.debug("logpresso fds tcp: cannot transform call request", t);
-
-					call.setError();
-					call.setResponse(call.getRequest());
-					ctx.channel().writeAndFlush(call);
-					return;
-				}
-			}
-		}
-
-		String login = (String) call.getRequest().get("login");
-		if (peer != null && login != null) {
-			int offset = Math.abs(login.hashCode()) % 2;
-			if (offset == peer.getSlot()) {
-				try {
-					peerExecutor.submit(new PeerCallRunner(ctx, login, call));
-					redirectCallCounter.incrementAndGet();
-				} catch (RejectedExecutionException e) {
-					rejectedCallCounter.incrementAndGet();
-					call.setResponse(new HashMap<String, Object>());
-					call.getResponse().put("guid", call.getGuid());
-					call.setError();
-					call.getChannel().writeAndFlush(call);
-				}
-
-				return;
-			}
-		}
 
 		handleLocalMatchCall(ctx, call);
 	}
@@ -563,89 +452,5 @@ public class TcpCallHandler extends SimpleChannelInboundHandler<Object> implemen
 			}
 		}
 		postTransformerRefreshTime = System.currentTimeMillis();
-	}
-
-	private class PeerPostRunner implements Runnable {
-		private FdsPostMessage postMsg;
-
-		public PeerPostRunner(FdsPostMessage postMsg) {
-			this.postMsg = postMsg;
-		}
-
-		@Override
-		public void run() {
-			FdsPost post = new FdsPost(postMsg.getTopic(), postMsg.getLogin(), postMsg.getParams());
-			post.setTransformed(postMsg.isTransformed());
-
-			try {
-				post.setGuid(postMsg.getGuid());
-				FdsClientPool.getInstance().send(post);
-
-				FdsAckMessage msg = new FdsAckMessage(postMsg.getGuid());
-				if (postTransformerName != null && postTransformer == null)
-					msg.setTimeout(true);
-				postMsg.getChannel().writeAndFlush(msg);
-			} catch (SocketTimeoutException e) {
-				postMsg.getChannel().writeAndFlush(new FdsAckMessage(postMsg.getGuid(), true));
-			} catch (NoAvailableServerException e) {
-				if (retryLog.isDebugEnabled())
-					retryLog.debug("tcp call: peer node down, post local [{}]", postMsg.getParams());
-
-				handleLocalPost(postMsg);
-			} catch (IOException e) {
-				slog.warn("tcp call: peer post failed [" + post.getParams() + "]", e);
-			}
-		}
-	}
-
-	private class PeerCallRunner implements Runnable {
-		private ChannelHandlerContext ctx;
-		private String login;
-		private FdsCallMessage matchCall;
-
-		private PeerCallRunner(ChannelHandlerContext ctx, String login, FdsCallMessage matchCall) {
-			this.ctx = ctx;
-			this.login = login;
-			this.matchCall = matchCall;
-		}
-
-		@Override
-		public void run() {
-			FdsCall peerCall = new FdsCall(login, matchCall.getRequest());
-			peerCall.setTransformed(matchCall.isTransformed());
-			Object guid = matchCall.getRequest().get("guid");
-			try {
-
-				FdsClientPool.getInstance().matches(peerCall);
-				if (callTransformerName != null && callTransformer == null)
-					matchCall.setError();
-
-				matchCall.setResponse(peerCall.getResponseParams());
-				// 제주은행 취약점점검조치로 주석처리 2022.09.13
-				matchCall.getResponse().put("guid", guid);
-				// 제주은행 취약점점검조치 2022.09.13 - FORWARD_NULL
-//				if(matchCall.getResponse() != null){
-//					matchCall.getResponse().put("guid", guid);
-//				}
-				
-				matchCall.getChannel().writeAndFlush(matchCall);
-
-				if (outlog.isDebugEnabled()) {
-					String measure = peerCall.getMeasure();
-					outlog.debug("fds tcp: measure [{}] for request [{}]", measure, matchCall.getRequest());
-				}
-			} catch (SocketTimeoutException e) {
-				matchCall.setResponse(new HashMap<String, Object>());
-				matchCall.getResponse().put("guid", guid);
-				matchCall.setError();
-				matchCall.getChannel().writeAndFlush(matchCall);
-			} catch (NoAvailableServerException e) {
-				if (retryLog.isDebugEnabled())
-					retryLog.debug("tcp call: peer node down, call local [{}]", matchCall.getRequest());
-				handleLocalMatchCall(ctx, matchCall);
-			} catch (IOException e) {
-				slog.warn("tcp call: peer call failed [" + matchCall.getRequest() + "]", e);
-			}
-		}
 	}
 }

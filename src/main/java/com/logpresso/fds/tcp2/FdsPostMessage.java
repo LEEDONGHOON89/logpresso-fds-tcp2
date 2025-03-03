@@ -1,4 +1,4 @@
-package com.logpresso.fds.tcp;
+package com.logpresso.fds.tcp2;
 
 import java.util.Date;
 import java.util.Map;
@@ -18,7 +18,7 @@ public class FdsPostMessage {
 
 	public FdsPostMessage() {
 	}
-
+	
 	public FdsPostMessage(String topic, String login, Map<String, Object> params) {
 		this(topic, login, params, null, null);
 	}

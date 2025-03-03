@@ -1,4 +1,4 @@
-package com.logpresso.fds.tcp.impl;
+package com.logpresso.fds.tcp2.impl;
 
 import java.net.InetSocketAddress;
 import java.security.SecureRandom;
@@ -44,9 +44,9 @@ import org.slf4j.LoggerFactory;
 import com.logpresso.fds.api.FdsConfigService;
 import com.logpresso.fds.api.FdsDetectService;
 import com.logpresso.fds.api.model.FdsConfig;
-import com.logpresso.fds.tcp.TcpCallService;
-import com.logpresso.fds.tcp.TcpCallStats;
-import com.logpresso.fds.tcp.TcpPeer;
+import com.logpresso.fds.tcp2.TcpCallService;
+import com.logpresso.fds.tcp2.TcpCallStats;
+import com.logpresso.fds.tcp2.TcpPeer;
 import com.logpresso.query.api.StreamQueryService;
 
 @Component(name = "tcp-call-service")

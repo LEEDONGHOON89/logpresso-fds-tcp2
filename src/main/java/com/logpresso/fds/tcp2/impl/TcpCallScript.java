@@ -1,4 +1,4 @@
-package com.logpresso.fds.tcp.impl;
+package com.logpresso.fds.tcp2.impl;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -14,9 +14,9 @@ import io.netty.channel.Channel;
 import com.logpresso.fds.client.FdsClientPool;
 import com.logpresso.fds.client.FdsClientPoolStatus;
 import com.logpresso.fds.client.FdsSession;
-import com.logpresso.fds.tcp.TcpCallService;
-import com.logpresso.fds.tcp.TcpCallStats;
-import com.logpresso.fds.tcp.TcpPeer;
+import com.logpresso.fds.tcp2.TcpCallService;
+import com.logpresso.fds.tcp2.TcpCallStats;
+import com.logpresso.fds.tcp2.TcpPeer;
 
 public class TcpCallScript implements Script {
 	private TcpCallService tcpCall;

@@ -1,4 +1,4 @@
-package com.logpresso.fds.tcp.impl;
+package com.logpresso.fds.tcp2.impl;
 
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -7,7 +7,7 @@ import org.apache.felix.ipojo.annotations.ServiceProperty;
 import org.araqne.api.Script;
 import org.araqne.api.ScriptFactory;
 
-import com.logpresso.fds.tcp.TcpCallService;
+import com.logpresso.fds.tcp2.TcpCallService;
 
 @Component(name = "tcp-call-script-factory")
 @Provides

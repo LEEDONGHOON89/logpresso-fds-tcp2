@@ -4,7 +4,7 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.logpresso</groupId>
-	<artifactId>logpresso-fds-tcp-noclient</artifactId>
+	<artifactId>logpresso-fds-tcp2</artifactId>
 	<version>0.0.1</version>
 	<packaging>bundle</packaging>
 	<name>Logpresso FDS TCP Adapter</name>
@@ -56,15 +56,15 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Bundle-SymbolicName>com.logpresso.fds.tcp.noclient</Bundle-SymbolicName>
+						<Bundle-SymbolicName>com.logpresso.fds.tcp2</Bundle-SymbolicName>
 						<Export-Package>
-							com.logpresso.fds.tcp;version=${project.version}
+							com.logpresso.fds.tcp2;version=${project.version}
 						</Export-Package>
 						<Import-Package>
 							*
 						</Import-Package>
 						<Private-Package>
-							com.logpresso.fds.tcp.impl
+							com.logpresso.fds.tcp2.impl
 						</Private-Package>
 					</instructions>
 				</configuration>
