@@ -59,7 +59,7 @@ public class TcpCallDecoder extends ByteToMessageDecoder {
 		if (logger.isDebugEnabled()) {
 			logger.debug("tcp call: channel [{}] readable [{}]", channel.remoteAddress(), len);
 		}
-		if (len < 6) {
+		if (len < 2) {
 			ec.incrementAndGet();
 			return null;
 		}
@@ -134,39 +134,6 @@ public class TcpCallDecoder extends ByteToMessageDecoder {
 		}else {
 			return null;
 		}
-		
-//		Map<String, Object> params = JSONConverter.parse(new JSONObject(line));
-
-//		if ((opt & 0xF0) == 0xF0) {
-//			if (logger.isDebugEnabled())
-//				logger.debug("tcp call: client [{}] post params [{}]", channel.remoteAddress(), params);
-
-//			String topic = (String) params.get("topic");
-//			String login = (String) params.get("login");
-//			FdsPostMessage msg = new FdsPostMessage(topic, login, params);
-//			msg.setTransformed(isTransformed);
-//			out.add(msg);
-//			return msg;
-//		} else if ((opt & 0x80) == 0x80) {
-//			if (logger.isDebugEnabled())
-//				logger.debug("tcp call: client [{}] post params [{}]", channel.remoteAddress(), params);
-//
-//			String guid = (String) params.get("guid");
-//			String topic = (String) params.get("topic");
-//			String login = (String) params.get("login");
-//			FdsPostMessage msg = new FdsPostMessage(topic, login, params, ctx.channel(), guid);
-//			msg.setTransformed(isTransformed);
-//			out.add(msg);
-//			return msg;
-//		} else {
-//			if (logger.isDebugEnabled())
-//				logger.debug("tcp call: client [{}] request params [{}]", channel.remoteAddress(), params);
-//
-//			FdsCallMessage msg = new FdsCallMessage(ctx.channel(), params);
-//			msg.setTransformed(isTransformed);
-//			out.add(msg);
-//			return msg;
-//		}
 	}
 
 	private void addCounter() {
