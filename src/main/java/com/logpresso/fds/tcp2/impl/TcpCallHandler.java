@@ -52,7 +52,6 @@ import com.logpresso.fds.client.FdsLogListener;
 import com.logpresso.fds.tcp2.FdsCallMessage;
 import com.logpresso.fds.tcp2.FdsPostMessage;
 import com.logpresso.fds.tcp2.TcpCallStats;
-import com.logpresso.fds.tcp2.TcpPeer;
 import com.logpresso.query.api.StreamQueryService;
 
 @Sharable
@@ -87,8 +86,6 @@ public class TcpCallHandler extends SimpleChannelInboundHandler<Object> implemen
 	private volatile long lastPostTime = 0;
 
 	private ThreadPoolExecutor peerExecutor;
-
-	private TcpPeer peer;
 
 	private FdsConfigService fdsConfigService;
 	private LogTransformerRegistry transformerRegistry;
@@ -156,39 +153,6 @@ public class TcpCallHandler extends SimpleChannelInboundHandler<Object> implemen
 		this.postTransformer = postTransformer;
 	}
 
-	public TcpPeer getTcpPeer() {
-		return peer;
-	}
-
-	public void setTcpPeer(TcpPeer peer) {
-		if (this.peer != null) {
-			FdsClientPool.getInstance().removeServerAddress(this.peer.getAddress());
-			FdsClientPool.getInstance().addLogListener(new FdsLogListener() {
-				public void onLog(FdsLogLevel level, String msg) {
-					if (level == FdsLogLevel.DEBUG)
-						slog.debug(msg);
-					else
-						slog.info(msg);
-				}
-
-				public void onLog(FdsLogLevel level, String msg, Throwable t) {
-					slog.error(msg);
-				}
-			});
-		}
-
-		if (peer != null) {
-			if (peer.isSsl()) {
-				KeyStore trustStore = FdsClientPool.loadKeyStore("JKS", new File(peer.getTrustStorePath()), peer
-						.getTrustStorePassword().toCharArray());
-				FdsClientPool.getInstance().setSsl(true);
-				FdsClientPool.getInstance().setTrustStore(trustStore);
-			}
-			FdsClientPool.getInstance().addServerAddress(peer.getAddress());
-		}
-
-		this.peer = peer;
-	}
 
 	public void resetCounters() {
 		redirectCallCounter.set(0);

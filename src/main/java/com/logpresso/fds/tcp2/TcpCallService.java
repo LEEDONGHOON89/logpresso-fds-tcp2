@@ -14,10 +14,6 @@ public interface TcpCallService {
 
 	TcpCallStats getStats();
 
-	TcpPeer getPeer();
-
-	void setPeer(TcpPeer peer);
-
 	void open(int port);
 
 	void openSsl(int port, String keyAlias, String trustAlias);

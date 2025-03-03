@@ -46,7 +46,6 @@ import com.logpresso.fds.api.FdsDetectService;
 import com.logpresso.fds.api.model.FdsConfig;
 import com.logpresso.fds.tcp2.TcpCallService;
 import com.logpresso.fds.tcp2.TcpCallStats;
-import com.logpresso.fds.tcp2.TcpPeer;
 import com.logpresso.query.api.StreamQueryService;
 
 @Component(name = "tcp-call-service")
@@ -96,29 +95,18 @@ public class TcpCallServiceImpl implements TcpCallService {
 //		executionHandler = new ExecutionHandler(new OrderedMemoryAwareThreadPoolExecutor(maxWorkers, 1048576, 1048676, 60, TimeUnit.SECONDS, new NamedThreadFactory("FDS Worker", true)));
 		//--수정부분끝--//
 		slog.info("start service tcp");
-		TcpPeer peer = null;
 		FdsConfig config = configService.getFdsConfig();
 		if (config != null && config.getTcpPort() != null) {
 			bindPort(config.getTcpPort(), config.getTcpKeyAlias(), config.getTcpTrustAlias());
-			if (config.getPeerSlot() != null) {
-				InetSocketAddress addr = new InetSocketAddress(config.getPeerHost(), config.getPeerPort());
-				peer = new TcpPeer(config.getPeerSlot(), addr);
-				peer.setTrustStore(config.getTrustStorePath(), config.getTrustStorePassword());
-			}
 
 		}
 
-		if (handler != null)
-			handler.setTcpPeer(peer);
 	}
 
 	@Invalidate
 	public void stop() {
 		slog.info("stop tcp service ");
 		// release all connections
-		if (handler != null)
-			handler.setTcpPeer(null);
-
 		closePort();
 	}
 
@@ -184,21 +172,6 @@ public class TcpCallServiceImpl implements TcpCallService {
 		}
 	}
 	
-//	private void closePort() {
-//		if (listener == null)
-//			return;
-//
-//		SocketAddress localAddr = listener.getLocalAddress();
-//		listener.unbind();
-//		listener.close().awaitUninterruptibly();
-//		listener.getFactory().releaseExternalResources();
-//		listener = null;
-//		slog.info("tcp call: listener [{}] closed", localAddr);
-//
-//		if (detector != null)
-//			detector.removeMatchListener(handler);
-//	}
-
 	private void saveTcpPort(Integer port) {
 		saveTcpPort(port, null, null);
 	}
@@ -253,33 +226,6 @@ public class TcpCallServiceImpl implements TcpCallService {
 																		
 		else
 			slog.info("tcp call: listener [{}] opened");
-	}
-
-	@Override
-	public TcpPeer getPeer() {
-		return handler.getTcpPeer();
-	}
-
-	@Override
-	public void setPeer(TcpPeer peer) {
-		FdsConfig config = configService.getFdsConfig();
-		if (config == null)
-			config = new FdsConfig();
-
-		if (peer == null) {
-			config.setPeerSlot(null);
-			config.setPeerHost(null);
-			config.setPeerPort(null);
-			config.setTrustStore(null, null);
-		} else {
-			config.setPeerSlot(peer.getSlot());
-			config.setPeerHost(peer.getAddress().getAddress().getHostAddress());
-			config.setPeerPort(peer.getAddress().getPort());
-			config.setTrustStore(peer.getTrustStorePath(), peer.getTrustStorePassword());
-		}
-
-		configService.setFdsConfig(config);
-		handler.setTcpPeer(peer);
 	}
 
 	@Override
