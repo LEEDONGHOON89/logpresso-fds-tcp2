@@ -126,6 +126,7 @@ public class TcpCallDecoder extends ByteToMessageDecoder {
 				logger.debug("tcp call: client [{}] post line [{}]", channel.remoteAddress(), line);
 			String guid = UUID.randomUUID().toString();
 			params.put("line", line);
+			params.put("guid", guid);
 			FdsPostMessage msg = new FdsPostMessage(null,null,params);
 			msg.setTransformed(isTransformed);
 			out.add(msg);
