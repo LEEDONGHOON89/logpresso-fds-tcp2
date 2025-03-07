@@ -16,7 +16,6 @@ import com.logpresso.fds.client.FdsClientPoolStatus;
 import com.logpresso.fds.client.FdsSession;
 import com.logpresso.fds.tcp2.TcpCallService;
 import com.logpresso.fds.tcp2.TcpCallStats;
-import com.logpresso.fds.tcp2.TcpPeer;
 
 public class TcpCallScript implements Script {
 	private TcpCallService tcpCall;
@@ -86,44 +85,6 @@ public class TcpCallScript implements Script {
 		}
 	}
 
-	public void tcpPeer(String[] args) {
-		TcpPeer peer = tcpCall.getPeer();
-		if (peer == null)
-			context.println("not set");
-		else
-			context.println(peer);
-	}
-
-	@ScriptUsage(description = "", arguments = {
-			@ScriptArgument(name = "slot", type = "int", description = "0 or 1"),
-			@ScriptArgument(name = "peer host", type = "string", description = "peer host address"),
-			@ScriptArgument(name = "peer port", type = "int", description = "peer port"),
-			@ScriptArgument(name = "file path", description = "the file path of the key store", autocompletion = PathAutoCompleter.class, optional = true) })
-	public void setTcpPeer(String[] args) {
-		int slot = Integer.parseInt(args[0]);
-		InetSocketAddress address = new InetSocketAddress(args[1], Integer.parseInt(args[2]));
-		TcpPeer peer = new TcpPeer(slot, address);
-
-		if (args.length > 3) {
-			try {
-				context.print("Key-Store Password? ");
-				String password = context.readPassword();
-				peer.setTrustStore(args[3], password);
-			} catch (InterruptedException e) {
-				context.println("interrupted");
-				return;
-			}
-		} else
-			peer.setTrustStore(null, null);
-
-		tcpCall.setPeer(peer);
-		context.println("set");
-	}
-
-	public void unsetTcpPeer(String[] args) {
-		tcpCall.setPeer(null);
-		context.println("unset");
-	}
 
 	public void resetTcpCounters(String[] args) {
 		tcpCall.resetCounters();
