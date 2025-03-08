@@ -49,6 +49,7 @@ import com.logpresso.fds.api.model.FdsConfig;
 import com.logpresso.fds.client.FdsClientPool;
 import com.logpresso.fds.client.FdsLogLevel;
 import com.logpresso.fds.client.FdsLogListener;
+import com.logpresso.fds.tcp2.FdsAckMessage;
 import com.logpresso.fds.tcp2.FdsCallMessage;
 import com.logpresso.fds.tcp2.FdsPostMessage;
 import com.logpresso.fds.tcp2.TcpCallStats;
@@ -343,6 +344,9 @@ public class TcpCallHandler extends SimpleChannelInboundHandler<Object> implemen
 	}
 
 	private void handleLocalPost(FdsPostMessage post) {
+		if (post.getGuid() != null){
+			post.getChannel().writeAndFlush(new FdsAckMessage(post.getGuid()));
+		}
 		postCounter.incrementAndGet();
 		lastPostTime = System.currentTimeMillis();
 		

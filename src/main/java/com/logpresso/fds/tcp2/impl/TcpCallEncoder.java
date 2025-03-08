@@ -45,22 +45,14 @@ public class TcpCallEncoder extends MessageToByteEncoder {
 			*/
 			FdsAckMessage post = (FdsAckMessage) msg;
 			Map<String, Object> m = new HashMap<String, Object>();
-			m.put("guid", post.getGuid());
-			String line = JSONConverter.jsonize(m);
-
+//			m.put("guid", post.getGuid());
+//			String line = JSONConverter.jsonize(m);
+			String line = "L"+post.getGuid(); // L+guid값으로 데이터부 ack 세팅
 			byte[] body = line.getBytes("utf-8");
-			byte[] header = new byte[4];
-
 			int len = body.length;
-			header[0] = (byte) ((len >> 24) & 0x3f);
-			header[1] = (byte) ((len >> 16) & 0xff);
-			header[2] = (byte) ((len >> 8) & 0xff);
-			header[3] = (byte) (len & 0xff);
-
-			if (post.isTimeout()) {
-				header[0] = (byte) (header[0] | 0x40);
-			}
-			out.writeBytes(Unpooled.wrappedBuffer(header,body));
+			
+			byte[] byteArray = ByteBuffer.allocate(2).putShort((short) len).array();
+			out.writeBytes(Unpooled.wrappedBuffer(byteArray,body));
 		}
 	}
 }
