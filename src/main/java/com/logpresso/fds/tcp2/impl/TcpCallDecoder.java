@@ -47,7 +47,7 @@ public class TcpCallDecoder extends ByteToMessageDecoder {
 			   
 		}
 	}
-
+	
 	protected Object decodeI(ChannelHandlerContext ctx, Channel channel, ByteBuf buffer,List<Object> out) throws Exception {
 		boolean isTransformed = false;
 		addCounter();
@@ -59,11 +59,11 @@ public class TcpCallDecoder extends ByteToMessageDecoder {
 		if (logger.isDebugEnabled()) {
 			logger.debug("tcp call: channel [{}] readable [{}]", channel.remoteAddress(), len);
 		}
-		if (len < 6) {
+		if (len < 2) {
 			ec.incrementAndGet();
 			return null;
 		}
-
+		
 //		if (logger.isDebugEnabled())
 //			logger.debug("tcp call: opt [{}]", optStr);
 //
@@ -76,6 +76,27 @@ public class TcpCallDecoder extends ByteToMessageDecoder {
 //		int bodyLen = Integer.parseInt(bodyByteStr);
 
 		//전문 길이 header 6바이트일경우 사용 ---end
+		
+		// 잉카 소스 참조 start
+//		int headerbit1 = buffer.readByte();
+//		if(headerbit1 == -1) {
+//			channel.close().sync();
+//			buffer.resetReaderIndex();
+//			return null;
+//		}
+//			
+//		int headerbit2 = buffer.readByte();
+//		if(headerbit2 == -1) {
+//			channel.close().sync();
+//			buffer.resetReaderIndex();
+//			return null;
+//		}	
+//		headerbit1 = headerbit1 <<8;
+//		headerbit1 = headerbit1 & 0x0000FF00;
+//		headerbit2 = headerbit2 & 0x000000FF;
+//		
+//		int bodyLen = (headerbit1 | headerbit2);
+		// 잉카 소스 참조 end
 		
 		int bodyLen = buffer.readShort(); 
 		if (logger.isDebugEnabled())
