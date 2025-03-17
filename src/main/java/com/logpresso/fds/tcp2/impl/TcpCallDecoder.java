@@ -114,39 +114,54 @@ public class TcpCallDecoder extends ByteToMessageDecoder {
 			ec.incrementAndGet();
 			return null;
 		}
-	
 		
 		byte[] payload = new byte[bodyLen];
 		buffer.readBytes(payload, 0, bodyLen);
-		String line = new String(payload, "utf-8");
+		String line = new String(payload, "euc-kr");
 		if (logger.isDebugEnabled())
 			logger.debug("tcp call: line [{}]", line);
-		String optStr = line.substring(0, 1);
-		logger.debug("tcp call: optStr [{}]",optStr);
+		String fdsDataCd = line.substring(0, 1);
+		logger.debug("tcp call: fdsDataCd [{}]",fdsDataCd);
 		//opt 체크
-		if (!optStr.equals("C") && !optStr.equals("P")) {
-			logger.warn("tcp call: invalid header opt [{}] from [{}]", optStr, channel.remoteAddress());
+		if (!fdsDataCd.equals("C") && !fdsDataCd.equals("P")) {
+			logger.warn("tcp call: invalid header opt [{}] from [{}]", fdsDataCd, channel.remoteAddress());
 			channel.close().sync();
 			buffer.resetReaderIndex();
 			return null;
 		}
 		
+		String fdsBypassYn = line.substring(1, 2);
+		if (!fdsBypassYn.equals("N") && !fdsBypassYn.equals("Y")) {
+			logger.warn("tcp call: invalid header opt [{}] from [{}]", fdsDataCd, channel.remoteAddress());
+			channel.close().sync();
+			buffer.resetReaderIndex();
+			return null;
+		}
+		
+		String fdsProtocolId = line.substring(2, 4);
 		Map<String, Object> params = new HashMap<String, Object>();
-		if(optStr.equals("C")) {
+		if(fdsDataCd.equals("C")) {
 			if (logger.isDebugEnabled())
 				logger.debug("tcp call: client [{}] request params [{}]", channel.remoteAddress(), params);
 			String guid = UUID.randomUUID().toString();
 			params.put("line", line);
 			params.put("guid", guid);
+			params.put("fdsDataCd", fdsDataCd);
+			params.put("fdsBypassYn", fdsBypassYn);
+			params.put("fdsProtocolId", fdsProtocolId);
 			FdsCallMessage msg = new FdsCallMessage(ctx.channel(), params);
 			msg.setTransformed(isTransformed);
 			out.add(msg);
 			return msg;
-		}else if(optStr.equals("P")) {
+		}else if(fdsDataCd.equals("P")) {
 			if (logger.isDebugEnabled())
 				logger.debug("tcp call: client [{}] post line [{}]", channel.remoteAddress(), line);
 			String guid = UUID.randomUUID().toString();
 			params.put("line", line);
+			params.put("guid", guid);
+			params.put("fdsDataCd", fdsDataCd);
+			params.put("fdsBypassYn", fdsBypassYn);
+			params.put("fdsProtocolId", fdsProtocolId);
 			FdsPostMessage msg = new FdsPostMessage(null,null,params);
 			msg.setTransformed(isTransformed);
 			out.add(msg);

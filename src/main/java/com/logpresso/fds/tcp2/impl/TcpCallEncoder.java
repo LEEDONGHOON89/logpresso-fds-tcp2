@@ -29,7 +29,14 @@ public class TcpCallEncoder extends MessageToByteEncoder {
 			FdsCallMessage call = (FdsCallMessage) msg;
 //			String line = JSONConverter.jsonize(call.getResponse());
 			String response_line = (String) call.getResponse().get("response");
-			byte[] body = response_line.getBytes("utf-8");
+			
+			if(response_line==null) {
+				if(logger.isErrorEnabled())
+					logger.error("fds tcp : response data is null");
+				
+				return;
+			}
+			byte[] body = response_line.getBytes("euc-kr");
 			int len = body.length;
 			
 			//6byte 길이사용할경우 
@@ -48,11 +55,21 @@ public class TcpCallEncoder extends MessageToByteEncoder {
 //			m.put("guid", post.getGuid());
 //			String line = JSONConverter.jsonize(m);
 			String line = "L"+post.getGuid(); // L+guid값으로 데이터부 ack 세팅
-			byte[] body = line.getBytes("utf-8");
+			byte[] body = line.getBytes("euc-kr");
 			int len = body.length;
 			
 			byte[] byteArray = ByteBuffer.allocate(2).putShort((short) len).array();
 			out.writeBytes(Unpooled.wrappedBuffer(byteArray,body));
 		}
+	}
+	
+	protected byte[] getLengthBytes(int length,int lengthByteSize) {
+		byte[] lengthBytes = new byte[2];
+		int tempLength = length >> 8;
+		lengthBytes[0] = (byte)(tempLength & 0x000000FF);
+		tempLength = length;
+		lengthBytes[1] = (byte)(tempLength & 0x000000FF);
+		
+		return lengthBytes;
 	}
 }
