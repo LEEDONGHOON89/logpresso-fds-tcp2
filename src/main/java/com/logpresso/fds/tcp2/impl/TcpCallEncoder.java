@@ -36,7 +36,9 @@ public class TcpCallEncoder extends MessageToByteEncoder {
 				
 				return;
 			}
+			try {
 			byte[] body = call.getResponseBytes(response);// 응답 전문 body부 생성
+			
 			int len = body.length;
 			
 			//6byte 길이사용할경우 
@@ -45,6 +47,11 @@ public class TcpCallEncoder extends MessageToByteEncoder {
 			//short 2바이트일경우 사용
 			byte[] byteArray = ByteBuffer.allocate(2).putShort((short) len).array();
 			out.writeBytes(Unpooled.wrappedBuffer(byteArray,body));
+			
+			logger.info("msg - > [{}]",Unpooled.wrappedBuffer(byteArray,body));
+			}catch(Exception e) {
+				logger.error("fds tcp : msg =[{}], error =[{}]",msg,e);
+			}
 		} else if (msg instanceof FdsAckMessage) {
 			/*
 		 	**DB증권,IM증권 대응용도로 TCP번들 추가작업시에 불필요할 것으로 판단되나, 테스트 완료 후 삭제 예정
@@ -60,6 +67,7 @@ public class TcpCallEncoder extends MessageToByteEncoder {
 			
 			byte[] byteArray = ByteBuffer.allocate(2).putShort((short) len).array();
 			out.writeBytes(Unpooled.wrappedBuffer(byteArray,body));
+			
 		}
 	}
 	

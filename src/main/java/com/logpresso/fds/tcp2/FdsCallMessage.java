@@ -134,7 +134,7 @@ public class FdsCallMessage {
 		String custId = (String)response.get("custId");
 		String login = (String)response.get("login");
 		String otr_guid = (String)response.get("otr_guid");
-		String detectResult = (String)response.get("detectResult");
+		String detectResult = (String)response.get("measure");
 
 		//sms_response_bytes 세팅
 		//bytes 데이터 생성
