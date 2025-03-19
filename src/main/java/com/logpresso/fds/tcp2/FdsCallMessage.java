@@ -126,12 +126,12 @@ public class FdsCallMessage {
 	
 	public byte[] getResponseBytes(Map<String,Object> response) {
 		String fdsProtocolVer = "02";
-		if(response.get("fdsProtocolVer")!=null)
-			fdsProtocolVer = (String)response.get("fdsProtocolVer");
+		if(response.get("fds_protocol_ver")!=null)
+			fdsProtocolVer = (String)response.get("fds_protocol_ver");
 		
-		String trDt = (String)response.get("trDt");
-		String trDlTmd = (String)response.get("trDlTmd");
-		String custId = (String)response.get("custId");
+		String trDt = (String)response.get("tr_dt");
+		String trDlTmd = (String)response.get("tr_dl_tmd");
+		String custId = (String)response.get("cust_id");
 		String login = (String)response.get("login");
 		String otr_guid = (String)response.get("otr_guid");
 		String detectResult = (String)response.get("measure");
