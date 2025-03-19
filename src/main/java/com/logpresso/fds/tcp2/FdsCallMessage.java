@@ -14,7 +14,32 @@ public class FdsCallMessage {
 	private boolean error;
 	private Date created = new Date();
 	private boolean isTransformed = false;
-
+	private byte[] sms_response_bytes;
+	//응답 전문 정의
+	final static int[] bodyAligns = {
+			FixedLengthMerge.ALIGN_LEFT, // 응답 전문 코드[RE]  고정값 'C'[1]
+			FixedLengthMerge.ALIGN_LEFT, // BYPASS여부 default 'N'
+			FixedLengthMerge.ALIGN_LEFT, // 고정값 'RE'
+			FixedLengthMerge.ALIGN_LEFT, // 01 고정[2] 
+			FixedLengthMerge.ALIGN_LEFT, // 로그일자 [8]
+			FixedLengthMerge.ALIGN_LEFT, // 로그시간 [9]
+			FixedLengthMerge.ALIGN_LEFT, // HTS_ID [20] 
+			FixedLengthMerge.ALIGN_LEFT, // 고객번호 [20]
+			FixedLengthMerge.ALIGN_LEFT, // 로그 랜덤 KEY [10]
+			FixedLengthMerge.ALIGN_LEFT, // 탐지결과 리턴 [1]
+	};
+	final static int[] bodyLengths = {
+			1,
+			1,
+			2,
+			2,
+			8,
+			9,
+			20,
+			20,
+			10,
+			1
+	};
 	public FdsCallMessage(Channel channel, Map<String, Object> request) {
 		this.channel = channel;
 		this.request = request;
@@ -97,5 +122,39 @@ public class FdsCallMessage {
 
 	public void setTransformed(boolean isTransformed) {
 		this.isTransformed = isTransformed;
+	}
+	
+	public byte[] getResponseBytes(Map<String,Object> response) {
+		String fdsProtocolVer = "02";
+		if(response.get("fdsProtocolVer")!=null)
+			fdsProtocolVer = (String)response.get("fdsProtocolVer");
+		
+		String trDt = (String)response.get("trDt");
+		String trDlTmd = (String)response.get("trDlTmd");
+		String custId = (String)response.get("custId");
+		String login = (String)response.get("login");
+		String otr_guid = (String)response.get("otr_guid");
+		String detectResult = (String)response.get("detectResult");
+
+		//sms_response_bytes 세팅
+		//bytes 데이터 생성
+		String[] bodyStrings = new String[bodyLengths.length];
+		bodyStrings[0] = "C";
+		bodyStrings[1] = "N"; //고정 값 전달
+		bodyStrings[2] = "RE";
+		bodyStrings[3] = fdsProtocolVer;
+		bodyStrings[4] = trDt;
+		bodyStrings[5] = trDlTmd;
+		bodyStrings[6] = custId;
+		bodyStrings[7] = login;
+		bodyStrings[8] = otr_guid;
+		bodyStrings[9] = detectResult;
+		
+		FixedLengthMerge bodyMerge = new FixedLengthMerge();
+		bodyMerge.setAligns(bodyAligns);
+		bodyMerge.setLengths(bodyLengths);
+		bodyMerge.setStrings(bodyStrings);
+		
+		return bodyMerge.merge();
 	}
 }

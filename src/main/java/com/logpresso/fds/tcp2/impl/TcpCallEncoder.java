@@ -28,15 +28,15 @@ public class TcpCallEncoder extends MessageToByteEncoder {
 		if (msg instanceof FdsCallMessage) {
 			FdsCallMessage call = (FdsCallMessage) msg;
 //			String line = JSONConverter.jsonize(call.getResponse());
-			String response_line = (String) call.getResponse().get("response");
+			Map<String, Object> response = call.getResponse();
 			
-			if(response_line==null) {
+			if(response==null) {
 				if(logger.isErrorEnabled())
 					logger.error("fds tcp : response data is null");
 				
 				return;
 			}
-			byte[] body = response_line.getBytes("euc-kr");
+			byte[] body = call.getResponseBytes(response);// 응답 전문 body부 생성
 			int len = body.length;
 			
 			//6byte 길이사용할경우 
