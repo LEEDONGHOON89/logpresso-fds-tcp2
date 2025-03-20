@@ -37,18 +37,18 @@ public class TcpCallEncoder extends MessageToByteEncoder {
 				return;
 			}
 			try {
-			byte[] body = call.getResponseBytes(response);// 응답 전문 body부 생성
-			
-			int len = body.length;
-			
-			//6byte 길이사용할경우 
-			//String headerStr = String.format("%06d", len);
-			//byte[] header = headerStr.getBytes("utf-8");
-			//short 2바이트일경우 사용
-			byte[] byteArray = ByteBuffer.allocate(2).putShort((short) len).array();
-			out.writeBytes(Unpooled.wrappedBuffer(byteArray,body));
-			
-			logger.info("msg - > [{}]",Unpooled.wrappedBuffer(byteArray,body));
+				byte[] body = call.getResponseBytes(response);// 응답 전문 body부 생성
+				
+				int len = body.length;
+				
+				//6byte 길이사용할경우 
+				//String headerStr = String.format("%06d", len);
+				//byte[] header = headerStr.getBytes("utf-8");
+				//short 2바이트일경우 사용
+				byte[] byteArray = ByteBuffer.allocate(2).putShort((short) len).array();
+				out.writeBytes(Unpooled.wrappedBuffer(byteArray,body));
+				
+				logger.info("msg - > [{}]",Unpooled.wrappedBuffer(byteArray,body));
 			}catch(Exception e) {
 				logger.error("fds tcp : msg =[{}], error =[{}]",msg,e);
 			}
