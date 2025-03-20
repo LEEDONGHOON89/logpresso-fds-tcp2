@@ -139,9 +139,9 @@ public class FdsCallMessage {
 		//sms_response_bytes 세팅
 		//bytes 데이터 생성
 		String[] bodyStrings = new String[bodyLengths.length];
-		bodyStrings[0] = "C";
-		bodyStrings[1] = "N"; //고정 값 전달
-		bodyStrings[2] = "RE";
+		bodyStrings[0] = "C"; //fdsDataCd
+		bodyStrings[1] = "N"; //fdsBypassYn , 탐지응답 전문에 의미 없어서 고정 값 전달
+		bodyStrings[2] = "RE";//fdsProtocolId
 		bodyStrings[3] = fdsProtocolVer;
 		bodyStrings[4] = trDt;
 		bodyStrings[5] = trDlTmd;
