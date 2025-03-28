@@ -47,8 +47,6 @@ public class TcpCallEncoder extends MessageToByteEncoder {
 				//short 2바이트일경우 사용
 				byte[] byteArray = ByteBuffer.allocate(2).putShort((short) len).array();
 				out.writeBytes(Unpooled.wrappedBuffer(byteArray,body));
-				
-				logger.info("msg - > [{}]",Unpooled.wrappedBuffer(byteArray,body));
 			}catch(Exception e) {
 				logger.error("fds tcp : msg =[{}], error =[{}]",msg,e);
 			}

@@ -198,6 +198,7 @@ public class TcpCallHandler extends SimpleChannelInboundHandler<Object> implemen
 
 	@Override
 	public void onMatch(Map<String, Object> m) {
+			
 		Object o = m.get("guid");
 		if (o == null) {
 			if (slog.isDebugEnabled())
@@ -373,8 +374,19 @@ public class TcpCallHandler extends SimpleChannelInboundHandler<Object> implemen
 		Channel channel = ctx.channel();
 		Integer channelId =channel.id().compareTo(channel.id());
 		
-		pendingCalls.put(guid, call);
-		channelGuids.put(channelId, guid);
+		//bypass 상태일경우 pendingCalls 제외 
+		
+		boolean isBypass = false;
+		
+		if(call.getRequest().get("fdsBypassYn")!=null ) {
+			if(call.getRequest().get("fdsBypassYn").equals("Y"))
+				isBypass=true;
+		}
+		
+		if(!isBypass) {
+			pendingCalls.put(guid, call);
+			channelGuids.put(channelId, guid);
+		}
 
 		Map<String, Object> row = call.getRequest();
 		row.put("_time", call.getCreated());
