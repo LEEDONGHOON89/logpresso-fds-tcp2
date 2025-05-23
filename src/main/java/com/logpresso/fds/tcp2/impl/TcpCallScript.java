@@ -33,16 +33,20 @@ public class TcpCallScript implements Script {
 	public void tcpSessions(String[] args) {
 		context.println("FDS Open Sessions");
 		context.println("-------------------");
-
+		int i = 0;
 		for (Channel channel : tcpCall.getChannels()) {
-			context.println("[" + channel.id() + "] " + channel.toString());
+			context.println(i +":[" + channel.id() + "] " + channel.toString());
+			i++;
 		}
 	}
 
 	@ScriptUsage(description = "kill tcp session", arguments = { @ScriptArgument(name = "channel id") })
 	public void tcpKillSession(String[] args) {
-		tcpCall.killChannel(Integer.parseInt(args[0]));
-		context.println("session killed");
+		Channel channel = tcpCall.getChannels().get(Integer.parseInt(args[0]));
+		
+		
+		tcpCall.killChannel(channel);
+		context.println("session killed channel=[" + channel.id() + "] " + channel.toString());
 	}
 
 	@ScriptUsage(description = "set or get max pool size", arguments = {})
@@ -84,7 +88,12 @@ public class TcpCallScript implements Script {
 			}
 		}
 	}
-
+	@ScriptUsage(description = "restart smsTcp")
+	public void restartTcp(String[] args) {
+		tcpCall.stop();
+		tcpCall.start();
+		
+	}
 
 	public void resetTcpCounters(String[] args) {
 		tcpCall.resetCounters();

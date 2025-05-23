@@ -243,8 +243,8 @@ public class TcpCallServiceImpl implements TcpCallService {
 	}
 
 	@Override
-	public void killChannel(int channelId) {
-		handler.killChannel(channelId);
+	public void killChannel(Channel channel) {
+		handler.killChannel(channel);
 	}
 
 	private class TcpCallChannelFactory extends ChannelInitializer {

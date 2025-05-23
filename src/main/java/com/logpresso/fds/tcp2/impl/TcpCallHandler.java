@@ -131,15 +131,15 @@ public class TcpCallHandler extends SimpleChannelInboundHandler<Object> implemen
 		return new ArrayList<Channel>(channels.values());
 	}
 
-	public void killChannel(int channelId) {
-		Channel channel = channels.remove(channelId);
+	public void killChannel(Channel channel_req) {
+		Channel channel = channels.remove(channel_req.id());
 		if (channel == null)
-			throw new IllegalStateException("already closed channel: " + channelId);
+			throw new IllegalStateException("already closed channel: " + channel_req.id());
 
 		channel.close();
 
 		String remote = getRemoteAddress((InetSocketAddress) channel.remoteAddress());
-		slog.info("fds tcp: killed channel [id {}, remote {}]", channelId, remote);
+		slog.info("fds tcp: killed channel [id {}, remote {}]", channel_req.id(), remote);
 	}
 
 	private String getRemoteAddress(InetSocketAddress addr) {

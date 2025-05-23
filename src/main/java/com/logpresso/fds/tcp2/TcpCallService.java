@@ -24,9 +24,13 @@ public interface TcpCallService {
 
 	List<Channel> getChannels();
 
-	void killChannel(int channelId);
 
 	void setCallTransformer(LogTransformer callTransformer);
 
 	void setPostTransformer(LogTransformer postTransformer);
+
+	void killChannel(Channel channel);
+	
+	void start();
+	void stop();
 }
